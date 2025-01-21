@@ -92,35 +92,35 @@ def main():
     parser.add_argument("-t", "--time",
                         type=int,
                         default=30,
-                        help="Time in seconds to change wallpaper.")
+                        help="time in seconds to change wallpaper")
 
     parser.add_argument("-c", "--category",
-                        type=str,
+                        nargs="*",
                         default="*",
-                        help="Category of wallpaper. You can specify multiple categories separated by ','.")
+                        help="category of wallpaper. You can specify multiple categories")
 
     parser.add_argument("-d", "--directory",
-                        type=str,
-                        default="~/Pictures/Wallpapers",
-                        help="Directory containing wallpapers.")
+                        nargs="*",
+                        default=["~/Pictures/Wallpapers"],
+                        help="directory containing wallpapers. You can specify multiple directories")
 
     parser.add_argument("-e", "--exec",
                         type=str,
                         default="swww img -t any",
-                        help="Command to execute to set wallpaper.")
+                        help="command to execute to set wallpaper")
 
     b_group.add_argument("-b", "--brightness",
                          type=str,
                          default="*",
                          choices=["dark", "light"],
-                         help="Brightness of wallpaper. Can be either 'dark' or 'light'.")
+                         help="brightness of wallpaper. Can be either 'dark' or 'light'")
 
     b_group.add_argument("-B",
                          nargs="?",
                          const="08:00 20:00",
                          default=False,
-                         help="Change brightness based on time of day. "
-                         "You can optionally specify day time and night time [HH:MM HH:MM].")
+                         help="change brightness based on time of day. "
+                         "You can optionally specify day time and night time (\"HH:MM HH:MM\")")
     
     argv = parser.parse_args()
 
@@ -128,17 +128,22 @@ def main():
     # Load wallpapers
     
     print("Collecting wallpapers...")
-    
-    if argv.directory.startswith("~"):
-        argv.directory = os.path.expanduser(argv.directory)
-    
-    if not os.path.isdir(argv.directory):
-        print(f"Error: '{argv.directory}' is not a directory")
-        exit(1)
 
-        
-    wallpapers       = get_wallpapers(argv.directory)
-    wlen             = len(wallpapers)
+    wallpapers = []
+
+    for d in argv.directory:
+    
+        if d.startswith("~"):
+            d = os.path.expanduser(d)
+    
+        if not os.path.isdir(d):
+            print(f"Error: '{d}' is not a directory")
+            exit(1)
+
+        wallpapers += get_wallpapers(d)
+
+
+    wlen = len(wallpapers)
                 
     if wlen == 0:
         print("No wallpapers found")
@@ -155,7 +160,7 @@ def main():
 
         tmp = []
 
-        for c in argv.category.split(","):
+        for c in argv.category:
             tmp += [w for w in wallpapers if w.category == c]
 
         wallpapers = tmp
