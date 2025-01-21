@@ -110,14 +110,17 @@ def main():
                         help="Command to execute to set wallpaper.")
 
     b_group.add_argument("-b", "--brightness",
-                        type=str,
-                        default="*",
-                        choices=["dark", "light"],
-                        help="Brightness of wallpaper. Can be either 'dark' or 'light'.")
+                         type=str,
+                         default="*",
+                         choices=["dark", "light"],
+                         help="Brightness of wallpaper. Can be either 'dark' or 'light'.")
 
     b_group.add_argument("-B",
-                        action="store_true",
-                        help="Change brightness based on time of day.")
+                         nargs="?",
+                         const="08:00 20:00",
+                         default=False,
+                         help="Change brightness based on time of day. "
+                         "You can optionally specify day time and night time [HH:MM HH:MM].")
     
     argv = parser.parse_args()
 
@@ -136,8 +139,6 @@ def main():
         
     wallpapers       = get_wallpapers(argv.directory)
     wlen             = len(wallpapers)
-    dark_wallpapers  = []
-    light_wallpapers = []
                 
     if wlen == 0:
         print("No wallpapers found")
@@ -161,9 +162,17 @@ def main():
             w.check_brightness()
         
         wallpapers = [w for w in wallpapers if w.theme == argv.brightness]
+
         
-    if argv.B:
+    if argv.B and len(argv.B.split()) >= 2:
         print("Filtering wallpapers dynamically based on time of day...")
+
+        daytime   = datetime.strptime(argv.B.split()[0], "%H:%M").time()
+        nighttime = datetime.strptime(argv.B.split()[1], "%H:%M").time()
+
+        print(f"Day time: {daytime}\n"
+              f"Night time: {nighttime}")
+        
         print("Calculating brightness of wallpapers...")
         
         for w in wallpapers:
@@ -194,14 +203,12 @@ def main():
     
     print(f"Changing wallpaper every {argv.time} seconds...", flush=True)
     
-    daytime       = datetime.strptime("08:00", "%H:%M").time()
-    nighttime     = datetime.strptime("20:00", "%H:%M").time()
     my_wallpapers = wallpapers
     
     while(True):
         time.sleep(argv.time)
 
-        if argv.B:
+        if argv.B and len(argv.B.split()) >= 2:
             current_time = datetime.now().time()
             
             if daytime < current_time < nighttime and argv.brightness != "light":
