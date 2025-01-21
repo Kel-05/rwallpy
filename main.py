@@ -97,7 +97,7 @@ def main():
     parser.add_argument("-c", "--category",
                         type=str,
                         default="*",
-                        help="Category of wallpaper.")
+                        help="Category of wallpaper. You can specify multiple categories separated by ','.")
 
     parser.add_argument("-d", "--directory",
                         type=str,
@@ -151,8 +151,14 @@ def main():
     # Filter wallpapers, if necessary
     
     if argv.category != "*":
-        print(f"Filtering wallpapers by category: {argv.category}")
-        wallpapers = [w for w in wallpapers if w.category == argv.category]
+        print(f"Filtering wallpapers by category/s: {argv.category}")
+
+        tmp = []
+
+        for c in argv.category.split(","):
+            tmp += [w for w in wallpapers if w.category == c]
+
+        wallpapers = tmp
 
     if argv.brightness != "*":
         print(f"Filtering wallpapers by brightness: {argv.brightness}")
